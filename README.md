@@ -31,13 +31,15 @@
 
 ​		首先，打开链接，可以看到下图的界面，位于上方的红框内是关于每个页面显示的信息数量及页数信息，另一个红框内的信息包括股票的代码、名称、涨跌幅、买入、卖出等内容，也就是我们需要从网站上爬取的数据。</br>
 
+![website_1](/pic/website_1.png)
+
 ​		点击翻页，URL 并没有随之发生明显的改变。
 
-![website_1](README.assets/website_1.png)</br>
+![website_2](/pic/website_2.png)
+
+</br>
 
 ​		再打开 Chrome 浏览器的开发者工具 在 XHR 那里， 可以看到另一个 Request URL</br>
-
-![website_2](README.assets/website_2.png)
 
 </br>
 
