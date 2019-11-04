@@ -33,11 +33,11 @@
 
 ​		点击翻页，URL 并没有随之发生明显的改变。
 
-![image-20191103204455518](C:\Users\Aprsun\AppData\Roaming\Typora\typora-user-images\image-20191103204455518.png)</br>
+![image-20191103204455518](pic/website_1)</br>
 
 ​		再打开 Chrome 浏览器的开发者工具 在 XHR 那里， 可以看到另一个 Request URL</br>
 
-<img src="C:\Users\Aprsun\AppData\Roaming\Typora\typora-user-images\image-20191103211410044.png" alt="image-20191103211410044"  />
+<img src="pic/website_2.png" alt="image-20191103211410044"  />
 
 </br>
 
