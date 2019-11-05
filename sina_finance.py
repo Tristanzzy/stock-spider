@@ -108,26 +108,32 @@ def ReadCsv(yesterday):
     """
     pd.set_option('max_colwidth', 200)    # 为了完整显示 url 调整列的最大宽度
     pd.set_option('colheader_justify', 'center')    # 保持列名居中
-    
-    yfilename = 'shanghai_limitup_'+ yesterday
-    yesterday_limit = pd.read_csv("{}.csv".format(yfilename),encoding = "gbk")
-    
+       
     tfilename = 'shanghai_limitup_'+ str(time.strftime("%Y%m%d"))
     today_limit = pd.read_csv("{}.csv".format(tfilename),encoding = "gbk")
     
-    #shanghai_limitup['code'] = pd.to_numeric(shanghai_limitup['code'])
-    if today_limit.empty:    # 考虑到有可能存在到收盘时没有涨停的股票 添加 if 判断
-        todaylimit = ('今天没有涨停的股票')
+    yfilename = 'shanghai_limitup_'+ yesterday
+    coldstart = os.path.isfile("{}.csv".format(yfilename))    # 判断昨天的文件是否存在 
+    
+    if coldstart == False:
+        todaylimit = today_limit[['code','name','buy','sell','url']].to_html()
         Continuouslimit = ('没有连续两天涨停的股票')
     else:
-        Continuous_limit = pd.merge(yesterday_limit,today_limit, on = ['code','name','url'], how = 'inner')
-        # 如果 dataframe today_limit 不为空 则根据 'code' 'name' 'url' 三列 合并 yesterday_limit 和 today_limit
-        todaylimit = today_limit[['code','name','buy','sell','url']].to_html() # 将 today_limit 转化为 html 
-        
-        if Continuous_limit.empty:    # 判断合并后的 Continuous_limit 是否为空 如果不为空 转成 html
+        yesterday_limit = pd.read_csv("{}.csv".format(yfilename),encoding = "gbk")  
+        #shanghai_limitup['code'] = pd.to_numeric(shanghai_limitup['code'])
+    
+        if today_limit.empty:    # 考虑到有可能存在到收盘时没有涨停的股票 添加 if 判断
+            todaylimit = ('今天没有涨停的股票')
             Continuouslimit = ('没有连续两天涨停的股票')
         else:
-            Continuouslimit = Continuous_limit[['code','name','url']].to_html()
+            Continuous_limit = pd.merge(yesterday_limit,today_limit, on = ['code','name','url'], how = 'inner')
+            # 如果 dataframe today_limit 不为空 则根据 'code' 'name' 'url' 三列 合并 yesterday_limit 和 today_limit
+            todaylimit = today_limit[['code','name','buy','sell','url']].to_html() # 将 today_limit 转化为 html 
+
+            if Continuous_limit.empty:    # 判断合并后的 Continuous_limit 是否为空 如果不为空 转成 html
+                Continuouslimit = ('没有连续两天涨停的股票')
+            else:
+                Continuouslimit = Continuous_limit[['code','name','url']].to_html()
     return todaylimit,Continuouslimit
 
 def GetMsg(todaylimit,Continuouslimit):
