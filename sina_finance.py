@@ -205,7 +205,9 @@ def SendEmail(receivers,head,html_msg):
     content_html = MIMEText(html_msg,"html","utf-8")
     msg.attach(content_html)
     
-    email_client = smtplib.SMTP(smtp_server)
+    #email_client = smtplib.SMTP(smtp_server，25)
+    email_client = smtplib.SMTP_SSL(smtp_server，465)	
+    # 在阿里云运行代码时 出现连接超时的情况 怀疑是防火墙的原因 
     email_client.login(username,password)
     email_client.sendmail(sender,receiver,msg.as_string())
     email_client.quit()
