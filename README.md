@@ -10,12 +10,35 @@
 
   双休日同样可以运行 爬下来的数据为周五下午三点收盘时的数据 </br>
 
+- 2019/11/21 </br>
+
+  服务器部署，定时运行代码
+
+  
+  
   
 
 
 ## 简介
 
 ​		偶然得知，如果一只股票连涨两天的话，那么它在第三天有大概率是赚的。所以打算实现每天定时爬取新浪财经上的个股信息，并将连涨两天的股票通过邮件的形式通知自己。
+
+### 需要的库
+
+```python
+#!/usr/bin/python
+import os
+import requests
+import re
+import time
+import datetime
+import pandas as pd
+import smtplib
+from email.mime.multipart import MIMEMultipart   # 构建邮件头信息
+from email.mime.text import MIMEText    # 构建邮件正文
+from email.header import Header    # 构建邮件标题
+from email.utils import formataddr    # 格式化发件人地址
+```
 
 ​		此代码仅供学习与交流。
 
@@ -25,10 +48,10 @@
 
 - [x] 从新浪财经 < http://vip.stock.finance.sina.com.cn/mkt/#hs_a > 获取数据
 - [x] 从获得的数据中筛选出涨停的股票 并实现邮件通知
-- [ ] 服务器部署，定时运行代码
+- [x] 服务器部署，定时运行代码
 - [ ] 对连续涨停的股票持续关注，直到涨跌幅出现负值
 
-### 网页分析
+### 获取网址
 
 ​		首先，打开链接，可以看到下图的界面，位于上方的红框内是关于每个页面显示的信息数量及页数信息，另一个红框内的信息包括股票的代码、名称、涨跌幅、买入、卖出等内容，也就是我们需要从网站上爬取的数据。</br>
 
@@ -63,4 +86,6 @@
   在得到 URL 之后，就可以着手准备获取数据了。
 
   
+
+### 解析网页
 

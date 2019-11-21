@@ -34,7 +34,7 @@ def GetUrls(page):
 #             continue
         
         time.sleep(2)
-    print (str(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))+' GetUrl succeed')
+
     return urls
 
 def GetData(urls):
@@ -53,7 +53,7 @@ def GetData(urls):
             value_tmp = list(value_tup[0])
             #print(value_list)
             value_list.append(value_tmp)
-    print (str(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))+' GetData succeed')    
+
     return key_list,value_list
 
 def GetStock(key_list,value_list):
@@ -69,7 +69,7 @@ def GetStock(key_list,value_list):
     date =str(time.strftime("%Y%m%d"))
     file_name = ''.join(('shanghai_stock_',date))
     shanghai_stock.to_csv('{}.csv'.format(file_name),index=False,encoding = "GBK")   # 保存 shanghai_stock.csv 留作备份
-    print (str(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))+' GetStock succeed') 
+
     return shanghai_stock
 
 def GetLimitup(shanghai_stock):
@@ -86,7 +86,7 @@ def GetLimitup(shanghai_stock):
     date =str(time.strftime("%Y%m%d"))
     file_name = ''.join(('shanghai_limitup_',date))
     shanghai_limitup.to_csv('{}.csv'.format(file_name),index=False,encoding = "GBK")
-    print (str(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))+' Get_limitup succeed') 
+
     return shanghai_limitup
 
     
