@@ -87,11 +87,104 @@ from email.utils import formataddr    # 格式化发件人地址
 
 ### 解析网页&获取数据
 
+先简单的爬取第一页数据，观察一下是否项目是所需要的数据。
+
+```python
+url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=80&sort=symbol&asc=1&node=hs_a&symbol=&_s_r_a=page'
+html = requests.get(url)
+rawdata = html.text
+print(type(rawdata))
+print(rawdata)
+```
+
+可以看到输出的是一个长得像列表里嵌套多个字典的字符串，
+
+```
+<class 'str'>
+[{symbol:"sh600000",code:"600000",name:"浦发银行",trade:"11.990",pricechange:"0.040",changepercent:"0.334",buy:"12.030",sell:"12.030",settlement:"11.990",open:"0.000",high:"0.000",low:"0.000",volume:0,amount:0,ticktime:"09:23:29",per:6.481,pb:0.733,mktcap:35193144.396003,nmc:33696412.914901,turnoverratio:0},
+...
+,{symbol:"sh600100",code:"600100",name:"同方股份",trade:"7.980",pricechange:"0.120",changepercent:"1.504",buy:"8.100",sell:"8.100",settlement:"7.980",open:"0.000",high:"0.000",low:"0.000",volume:0,amount:0,ticktime:"09:23:34",per:-6.096,pb:1.426,mktcap:2365191.362898,nmc:2365191.362898,turnoverratio:0}]
+```
+
+对获取的字符串进行处理，利用 replace( ) 函数去掉字符串中的花括号和双引号，再按照换行符 '\n' 切割字符串。
+
+```python
+rawdata = 
+html.text[1:-1].replace(',{','\n').replace('{','').replace('}','').replace('"','')
+data_list = rawdata.split('\n')
+print(data_list[0])
+```
+
+输出结果如下：
+
+```
+symbol:sh600000,code:600000,name:浦发银行,trade:12.010,pricechange:0.020,changepercent:0.167,buy:12.010,sell:12.020,settlement:11.990,open:12.030,high:12.030,low:12.000,volume:825200,amount:9918180,ticktime:09:33:39,per:6.492,pb:0.734,mktcap:35251848.556797,nmc:33752620.442699,turnoverratio:0.00294
+```
+
+### 进一步处理数据
+
+为了方便对数据的处理，将获取的股票信息，转化成 DataFrame 。利用正则提取出冒号前的内容，记作``` key_list``` ；循环遍历 ```data_list``` 列表提取出每支股票对应列名的值，添加到空列表```value_list``` 里。依据```key_list```  ，```value_list``` 构建 ```DataFrame``` 
+
+```python
+key_list = re.findall(r'([a-z]+):',data_list[0])
+#print (key_list)
+value_list = []
+for i in range(len(data_list)):
+    value_tup = re.findall(".*symbol:(.*),code:(.*),name:(.*),trade:(.*),pricechange:(.*),changepercent:(.*),buy:(.*),sell:(.*),settlement:(.*),open:(.*),high:(.*),low:(.*),volume:(.*),amount:(.*),ticktime:(.*),per:(.*),pb:(.*),mktcap:(.*),nmc:(.*),turnoverratio:(.*)",data_list[i])
+    value_tmp = list(value_tup[0])
+    value_list.append(value_tmp)
+stock = pd.DataFrame(value_list,columns = key_list )
+```
+
+在 ```DataFrame``` 的基础上继续处理数据，
+
++ 原先的 ```ticktime``` 列是爬取数据时的时间，大部分都是15:00:00，为了方便后续的处理，我们用爬取数据时的日期替换；
+
+  ```python
+  day = str(time.strftime("%Y%m%d"))
+  stock['ticktime'] = day + ' ' + stock['ticktime']
+  ```
+
++ 爬取下来的数据是沪深股市的，我们因为只观察上证，所以筛选出上证的股票；
+
+  从数据中可以观察到 ```symbol``` 列中上证的股票和深证股票有明显的差别，一个是 ```sh******``` 的形式，一个是```sz******``` 的形式
+
+  ```python
+  region = stock.symbol.astype(str).str[0:2]
+  shanghai_stock = stock.loc[region == 'sh']
+  ```
+
++ 因为是依据涨停，进行选股，所以将涨停的股票（涨跌幅 >= 10）筛选出来
+
+  ```
+  shanghai_stock['changepercent'] = pd.to_numeric(shanghai_stock['changepercent'])
+  shanghai_limitup =shanghai_stock.loc[shanghai_stock['changepercent'] >= 10]
+  ```
+
++ 考虑到可能需要点进详情页看详细信息，为每支股票添加详情页 url ，可以观察到股票详情页的 url 多为
+
+  >  https://finance.sina.com.cn/realstock/company/{}/nc.shtml 
+
+  而花括号中的内容则为每支股票的 ```symbol``` 列
+
+  ![website_3](README.assets/website_3.jpg)
+
+```python
+symbols = shanghai_limitup['symbol'].values
+for i in symbols:
+	stockurl = 'https://finance.sina.com.cn/realstock/company/{}/nc.shtml'
+	shanghai_limitup.loc[shanghai_limitup['symbol'] == i ,'url'] = stockurl.format(i)
+```
+
+
+
+### 发送邮件
+
 
 
 ### 服务器部署
 
-#### 1. 申请与服务器
+#### 1. 申请服务器
 
 这个我也没啥研究，之前用过阿里云，这次也选择在阿里云开了个服务器，系统选择的是Centos7。
 
